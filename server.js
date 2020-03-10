@@ -1,3 +1,4 @@
+
 let {Client, MessageEmbed} = require('discord.js');
 let fs = require('fs');
 let express = require('express');
@@ -118,43 +119,49 @@ async function sendValidate(msg) {
   let purchaseSupplements = []
   let purchasesMenus = []
 
-  paniers[msg.author.tag]["menus"].forEach(function(menu) {
-      total += menu.price
+  if(user.id != -1) {
+    paniers[msg.author.tag]["menus"].forEach(function(menu) {
+        total += menu.price
 
-      purchasesMenus.push({
-        formule: menu["@id"],
-        customerComment: menu.comment,
-        content: menu.content
-      })
-  })
+        purchasesMenus.push({
+          formule: menu["@id"],
+          customerComment: menu.comment,
+          content: menu.content
+        })
+    })
 
-  paniers[msg.author.tag]["supplements"].forEach(function(supp) {
-      total += supp.price
-      purchaseSupplements.push({ qty: 1, product: supp["@id"]})
-  })
+    paniers[msg.author.tag]["supplements"].forEach(function(supp) {
+        total += supp.price
+        purchaseSupplements.push({ qty: 1, product: supp["@id"]})
+    })
 
-  // TODO: Replace with real purchase
-  let data = {
-    "user": "/api/users/"+user.id,
-    "date": new Date().toISOString(),
-    "purshaseMenuses" : purchasesMenus,
-    "status": "En attente de validation",
-    "purshaseProducts": purchaseSupplements,
-    "total": total
+    // TODO: Replace with real purchase
+    let data = {
+      "user": "/api/users/"+user.id,
+      "date": new Date().toISOString(),
+      "purshaseMenuses" : purchasesMenus,
+      "status": "En attente de validation",
+      "purshaseProducts": purchaseSupplements,
+      "total": total
+    }
+
+    fetch('http://saladetomateoignons.ddns.net/api/purshases', {
+      method: 'POST',
+      body: JSON.stringify(data),
+      headers: { 'Content-Type': 'application/json' }
+    })
+    .then(response => response.json())
+    .then(json => console.log(json))
+    .catch(console.error)
+
+    msg.author.createDM().then(channel => {
+      channel.send('Commande validée, en cuisine Emile ! :smile:')
+    })
+  } else {
+    msg.author.createDM().then(channel => {
+      channel.send('Il semblerait que tu n\'ais pas de compte sur notre site, inscris toi vite et associe ton compte discord ! :smile:')
+    })
   }
-
-  fetch('http://saladetomateoignons.ddns.net/api/purshases', {
-    method: 'POST',
-    body: JSON.stringify(data),
-    headers: { 'Content-Type': 'application/json' }
-  })
-  .then(response => response.json())
-  .then(json => console.log(json))
-  .catch(console.error)
-
-  msg.author.createDM().then(channel => {
-    channel.send('Commande validée, en cuisine Emile ! :smile:')
-  })
 }
 
 function resetShop(msg) {
