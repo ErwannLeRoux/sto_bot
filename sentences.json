@@ -1,0 +1,8 @@
+{
+  "states": {
+    "validate": "Ta commande a été validée par le chef !",
+    "canceled": "Le chef ne va pas pouvoir préparer ta commande..",
+    "ready": "Ta commande est prête viens vite la récupérer !",
+    "delivered": "Merci d'avoir récupéré ta commande ! Bon apétit et à bientôt !"
+  }
+}
