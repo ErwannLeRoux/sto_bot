@@ -1,8 +1,9 @@
 {
   "states": {
-    "validate": "Ta commande a été validée par le chef !",
+    "validate": "Ta commande a été validée par le chef ! :smile:",
     "canceled": "Le chef ne va pas pouvoir préparer ta commande..",
-    "ready": "Ta commande est prête viens vite la récupérer !",
-    "delivered": "Merci d'avoir récupéré ta commande ! Bon apétit et à bientôt !"
+    "ready": "Ta commande est prête viens vite la récupérer ! :smile:",
+    "delivered": "Merci d'avoir récupéré ta commande ! Bon apétit et à bientôt ! :smile:",
+    "in_preparation": "Je commence à préparer ta commande, elle sera prête dans peu de temps ! :smile:"
   }
 }

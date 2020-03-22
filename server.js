@@ -142,8 +142,11 @@ async function sendValidate(msg) {
       "purshaseMenuses" : purchasesMenus,
       "status": "En attente de validation",
       "purshaseProducts": purchaseSupplements,
-      "total": total
+      "total": total,
+      "paid": false
     }
+
+    console.log(data)
 
     fetch('http://saladetomateoignons.ddns.net/api/purshases', {
       method: 'POST',
@@ -293,8 +296,9 @@ app.use(bodyParser.urlencoded({
 app.use(bodyParser.json());
 
 app.post('/bot/updateState', function(req, res) {
+  console.log("api status called")
   let user = client.users.cache.find(user => {
-    return user.tag == req.body.username
+    return user.id == req.body.username
   })
 
   switch(req.body.status) {
