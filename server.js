@@ -301,25 +301,27 @@ app.post('/bot/updateState', function(req, res) {
     return user.id == req.body.username
   })
 
-  switch(req.body.status) {
-    case "ready":
-      let activities = user.presence.activities
-      if(activities.length != 0) {
-        let gameName = activities[0].name
-        message = "Arrête de jouer à "+gameName+" et viens chercher ta commande !"
-      } else {
+  if(user) {
+    switch(req.body.status) {
+      case "ready":
+        let activities = user.presence.activities
+        if(activities.length != 0) {
+          let gameName = activities[0].name
+          message = "Arrête de jouer à "+gameName+" et viens chercher ta commande !"
+        } else {
+          message = sentences.states[req.body.status]
+        }
+        break;
+      default:
         message = sentences.states[req.body.status]
-      }
-    break;
-    default:
-      message = sentences.states[req.body.status]
+    }
+
+    user.createDM().then(channel => {
+      channel.send(message)
+    })
+
+    res.send(user)
   }
-
-  user.createDM().then(channel => {
-    channel.send(message)
-  })
-
-  res.send(user)
 });
 
 client.on('ready', () => {
