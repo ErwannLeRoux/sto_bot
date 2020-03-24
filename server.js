@@ -4,6 +4,7 @@ let fs = require('fs');
 let express = require('express');
 let bodyParser = require('body-parser');
 let fetch = require('node-fetch');
+let moment = require('moment');
 
 let paniers = []
 let buildingMenu = false
@@ -119,6 +120,11 @@ async function sendValidate(msg) {
   let purchaseSupplements = []
   let purchasesMenus = []
 
+  let hour = msg.content.substr(msg.content.length - 5, 5);
+  let hour_only = hour.substr(0, 2)
+  let min_only = hour.substr(3, 2)
+  let date = moment().set({hour:hour_only,minute:min_only,second:0,millisecond:0})
+
   if(user.id != -1) {
     paniers[msg.author.tag]["menus"].forEach(function(menu) {
         total += menu.price
@@ -130,23 +136,35 @@ async function sendValidate(msg) {
         })
     })
 
+    alreadyAdd = []
     paniers[msg.author.tag]["supplements"].forEach(function(supp) {
         total += supp.price
-        purchaseSupplements.push({ qty: 1, product: supp["@id"]})
+
+        item = alreadyAdd.find(it => {
+            return it.product === supp["@id"]
+        })
+
+        if(item) {
+            item.qty += 1
+        } else {
+            alreadyAdd.push({qty: 1, product: supp["@id"]})
+        }
     })
+
+    purchaseSupplements = alreadyAdd;
 
     // TODO: Replace with real purchase
     let data = {
       "user": "/api/users/"+user.id,
       "date": new Date().toISOString(),
       "purshaseMenuses" : purchasesMenus,
-      "status": "En attente de validation",
+      "status": "waiting",
       "purshaseProducts": purchaseSupplements,
       "total": total,
-      "paid": false
+      "paid": false,
+      "deliveryHour": date.format("YYYY-MM-DD HH:mm:ss")
     }
 
-    console.log(data)
 
     fetch('http://saladetomateoignons.ddns.net/api/purshases', {
       method: 'POST',
@@ -154,7 +172,17 @@ async function sendValidate(msg) {
       headers: { 'Content-Type': 'application/json' }
     })
     .then(response => response.json())
-    .then(json => console.log(json))
+    .then(json => {
+        console.log(json)
+        /*fetch('http://saladetomateoignons.ddns.net/sendNotifications', {
+            method: 'POST',
+            body: JSON.stringify(json),
+            headers: { 'Content-Type': 'application/json' }
+        })
+        .then(response => response.json())
+        .then(json => console.log(json))
+        .catch(console.error)*/
+    })
     .catch(console.error)
 
     msg.author.createDM().then(channel => {
@@ -353,7 +381,7 @@ client.on('message', msg => {
       case "!panier":
         sendPanier(msg)
         break;
-      case "!valider":
+      case (msg.content.match(/^!valider pour ([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/) || {}).input:
         sendValidate(msg)
         break;
       case "!vider":
