@@ -173,15 +173,35 @@ async function sendValidate(msg) {
     })
     .then(response => response.json())
     .then(json => {
-        console.log(json)
-        /*fetch('http://saladetomateoignons.ddns.net/sendNotifications', {
+        let score = 0
+        if(json.total < 10) {
+            score += 4
+        } else if(json.total < 20) {
+            score += 3
+        } else if(json.total < 30) {
+            score += 2
+        } else if(json.total < 40) {
+            score += 1
+        }
+
+        let p_number = json.user.purshases.length
+        if(p_number < 3) {
+            score += 2
+        } else if(p_number < 6) {
+            score += 4
+        } else if(p_number >= 9) {
+            score += 6
+        }
+
+        json.trustScore = score
+        fetch('http://saladetomateoignons.ddns.net/sendNotifications', {
             method: 'POST',
             body: JSON.stringify(json),
             headers: { 'Content-Type': 'application/json' }
         })
         .then(response => response.json())
         .then(json => console.log(json))
-        .catch(console.error)*/
+        .catch(console.error)
     })
     .catch(console.error)
 
