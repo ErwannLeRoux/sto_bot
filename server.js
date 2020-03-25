@@ -114,7 +114,7 @@ function sendPanier(msg) {
     if(paniers[msg.author.tag]["supplements"].length == 0 && paniers[msg.author.tag]["menus"].length == 0) {
       embed = "Ton panier est vide :cry:"
     } else {
-      embed.addField(`Total - ${total}€`, "Tape !valider pour passer ta commande")
+      embed.addField(`Total - ${total}€`, "Tape !valider pour hh:mm passer ta commande")
     }
 
     channel.send(embed);
@@ -332,10 +332,10 @@ function writeRules() {
   embed.addField("Pour afficher les suppléments", "Tape !supplements")
   embed.addField("Pour ajouter un supplément à ta commande", "Tape ?nomSupplément par exemple ?Orangina")
   embed.addField("Pour ajouter un supplément à ta commande", "Tape ?nomMenu ?nomBoisson ?nomAccompagnement ?nomSauce ?motAuChef par exemple ?Classique ?Coca Cola ?Frites ?sauce blanche ?Pas trop cuit stp chef")
-  embed.addField("Pour valider ta commande", "Tape !valider")
+  embed.addField("Pour valider ta commande", "Tape !valider pour hh:mm (ex: !valider pour 19:30)")
 
   tutorialChannel.send(embed)
-  tutorialChannel.send("Bon apétit ! :smile:")
+  tutorialChannel.send("Bon appétit ! :smile:")
 }
 
 let rawdata = fs.readFileSync('sentences.json');
