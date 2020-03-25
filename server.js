@@ -35,7 +35,20 @@ function sendMenus(msg) {
 
     getMenus().then(function(res) {
       res["hydra:member"].forEach(menu => {
-        embed.addField(menu.name+" - "+menu.price+"€", menu.description)
+
+        let ingStr = ""
+        menu.sandwich.ingredients.forEach((ing, index) => {
+            if(menu.sandwich.ingredients.length == index - 1) {
+                ingStr += ing.name
+            } else {
+                ingStr += ing.name + ", "
+            }
+        })
+
+        if(ingStr != "" ) {
+            ingStr = `(${ingStr})`
+        }
+        embed.addField(menu.name+" - "+menu.price+"€", menu.description + " "+ingStr)
       });
       channel.send(embed);
     })
@@ -129,10 +142,16 @@ async function sendValidate(msg) {
     paniers[msg.author.tag]["menus"].forEach(function(menu) {
         total += menu.price
 
+        let ingNames = []
+        menu.sandwich.ingredients.map(ing => {
+            ingNames.push(ing.name)
+        })
+
         purchasesMenus.push({
           formule: menu["@id"],
           customerComment: menu.comment,
-          content: menu.content
+          content: menu.content,
+          ingredients: ingNames.join(',')
         })
     })
 
@@ -153,6 +172,17 @@ async function sendValidate(msg) {
 
     purchaseSupplements = alreadyAdd;
 
+    let score = 0
+    if(total < 10) {
+        score += 4
+    } else if(total < 20) {
+        score += 3
+    } else if(total < 30) {
+        score += 2
+    } else if(total < 40) {
+        score += 1
+    }
+
     // TODO: Replace with real purchase
     let data = {
       "user": "/api/users/"+user.id,
@@ -162,9 +192,9 @@ async function sendValidate(msg) {
       "purshaseProducts": purchaseSupplements,
       "total": total,
       "paid": false,
-      "deliveryHour": date.format("YYYY-MM-DD HH:mm:ss")
+      "deliveryHour": date.format("YYYY-MM-DD HH:mm:ss"),
+      "trustScore": score
     }
-
 
     fetch('http://saladetomateoignons.ddns.net/api/purshases', {
       method: 'POST',
@@ -173,27 +203,6 @@ async function sendValidate(msg) {
     })
     .then(response => response.json())
     .then(json => {
-        let score = 0
-        if(json.total < 10) {
-            score += 4
-        } else if(json.total < 20) {
-            score += 3
-        } else if(json.total < 30) {
-            score += 2
-        } else if(json.total < 40) {
-            score += 1
-        }
-
-        let p_number = json.user.purshases.length
-        if(p_number < 3) {
-            score += 2
-        } else if(p_number < 6) {
-            score += 4
-        } else if(p_number >= 9) {
-            score += 6
-        }
-
-        json.trustScore = score
         fetch('http://saladetomateoignons.ddns.net/sendNotifications', {
             method: 'POST',
             body: JSON.stringify(json),
@@ -227,9 +236,9 @@ function resetShop(msg) {
 }
 
 async function processDefault(msg) {
-  let menusList = await getMenus()
-  let supplementsList = await getSupplement()
-  let ingredientsList = await getIngredients()
+  let menusList = await getMenus().catch(console.error)
+  let supplementsList = await getSupplement().catch(console.error)
+  let ingredientsList = await getIngredients().catch(console.error)
 
   // init panier
   if(!paniers[msg.author.tag]) {
@@ -278,9 +287,8 @@ async function processDefault(msg) {
           && accompObj.category === '/api/product_categories/2'
           && sauceObj.type === 'sauce') {
 
-            sandwichObj = supplementsList["hydra:member"].find(supp => {
-              return supp["@id"] === menuObj.sandwich
-            })
+            sandwichObj = menuObj.sandwich
+
 
             menuObj.content = [boissonObj["@id"], accompObj["@id"], sandwichObj["@id"]]
             menuObj.comment = comment
